@@ -8,12 +8,12 @@ const jwt = require('jsonwebtoken');
 const db = knex({
     client: 'pg',
     connection: {
-        host: '127.0.0.1',
-        user: 'postgres',
-        password: '123',
-        database: 'customer-portal'
+        connectionString: process.env.DATABASE_URL,
+        ssl: true,
     }
 })
+
+let entries = 0;
 
 const app = express();
 
@@ -31,6 +31,11 @@ const parseToken = (req, res, next) => {
 
 app.use(bodyParser.json());
 app.use(cors()); //for unsecure requests. just to test the app on a localhsot
+
+app.get('/', (req, res) => {
+    entries ++;
+    res.end(`<h1>${entries}</h1>`);
+})
 
 app.post('/signin', (req, res) => {
     db.select('loginemail', 'hash').from('login').where('loginemail', '=', req.body.email)
@@ -165,6 +170,6 @@ app.delete('/trips', parseToken, (req, res) => {
     })
 })
 
-app.listen(3001, () => {
-    console.log('app is running on port 3001');
+app.listen(process.env.PORT || 3001, () => {
+    console.log(`app is running on port ${process.env.PORT}`);
 })
